@@ -139,6 +139,18 @@ begin
   foreach t in array array['goals','tasks','expenses','contacts','work_logs','projects','project_columns','project_cards','reference_images','correspondence'] loop
     execute format('alter table %I enable row level security;', t);
     execute format('create policy %I_owner on %I for all using (user_id = auth.uid()) with check (user_id = auth.uid());', t, t);
-    execute format('grant select, insert, update, delete on %I to authenticated;', t);
+  end loop;
+end $$;
+
+do $$
+declare t text;
+begin
+  -- soft-delete tables: deletes go through deleted_at, never a hard SQL delete
+  foreach t in array array['goals','tasks','expenses','contacts','work_logs','projects','project_columns','project_cards'] loop
+    execute format('grant select, insert, update on %I to authenticated;', t);
+  end loop;
+  -- append-only log tables: no updated_at, hard delete is the intended exception
+  foreach t in array array['reference_images','correspondence'] loop
+    execute format('grant select, insert, delete on %I to authenticated;', t);
   end loop;
 end $$;
