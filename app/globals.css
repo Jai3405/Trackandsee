@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #14192B;
+  --color-indigo-900: #171F38;
+  --color-indigo-700: #232C4D;
+  --color-parchment: #F6F1E7;
+  --color-parchment-dim: #EDE6D6;
+  --color-brass: #C9A05C;
+  --color-dusty-blue: #7C93B3;
+  --color-rust: #B85C4A;
+  --color-sage: #7A9471;
+  --font-display: var(--font-fraunces), ui-serif, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, sans-serif;
+  --radius-frame: 20px;
+}
+
+body {
+  @apply bg-parchment text-ink;
+}
