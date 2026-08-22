@@ -129,7 +129,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['goals','tasks','expenses','contacts','work_logs','projects','project_cards'] loop
-    execute format('create trigger %I_set_updated_at before update on %I for each row execute function set_updated_at();', t, t);
+    execute format('create trigger %I_set_updated_at before insert or update on %I for each row execute function set_updated_at();', t, t);
   end loop;
 end $$;
 
@@ -154,3 +154,9 @@ begin
     execute format('grant select, insert, delete on %I to authenticated;', t);
   end loop;
 end $$;
+
+-- Supabase's default ACL grants truncate/references/trigger/maintain to anon/authenticated;
+-- RLS does not cover TRUNCATE, so revoke it explicitly to keep the no-hard-delete invariant.
+revoke truncate on all tables in schema public from anon, authenticated;
+
+alter publication supabase_realtime add table goals, tasks;
