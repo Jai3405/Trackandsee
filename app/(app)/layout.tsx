@@ -7,6 +7,8 @@ import { getSupabaseClient } from '@/lib/supabase/client';
 import { db } from '@/lib/db/schema';
 import { runSyncCycle } from '@/lib/sync/engine';
 import { subscribeRealtime } from '@/lib/sync/realtime';
+import { WorkspaceSwitcher } from '@/components/workspace-switcher';
+import { SyncIndicator } from '@/components/sync-indicator';
 
 const queryClient = new QueryClient();
 
@@ -35,5 +37,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading || !user) return null;
 
-  return <QueryClientProvider client={queryClient}><div className="min-h-screen">{children}</div></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-parchment">
+        <header className="flex items-center justify-between bg-indigo-900 px-4 py-3">
+          <WorkspaceSwitcher />
+          <SyncIndicator />
+        </header>
+        <main>{children}</main>
+      </div>
+    </QueryClientProvider>
+  );
 }
