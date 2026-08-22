@@ -33,7 +33,7 @@ export default function GoalDetailPage() {
         <label htmlFor="new-task-title" className="sr-only">Title</label>
         <input id="new-task-title" value={title} onChange={(e) => setTitle(e.target.value)}
           className="flex-1 rounded-lg border px-3 py-2" placeholder="Action item title" />
-        <button type="submit" className="rounded-lg bg-brass px-4 py-2">Add action item</button>
+        <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-parchment">Add action item</button>
       </form>
     </div>
   );

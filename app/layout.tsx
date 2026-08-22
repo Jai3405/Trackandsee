@@ -1,8 +1,13 @@
 import type { Metadata } from 'next';
-import { Fraunces, Inter } from 'next/font/google';
+import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-fraunces' });
+const displaySerif = localFont({
+  src: './fonts/TcjimmyserifproBold.otf',
+  variable: '--font-display-serif',
+  weight: '700',
+});
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
@@ -11,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="en" className={`${displaySerif.variable} ${inter.variable}`}>
       <body className="font-sans">{children}</body>
     </html>
   );

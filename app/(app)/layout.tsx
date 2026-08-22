@@ -1,6 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSession } from '@/lib/auth/session';
 import { getSupabaseClient } from '@/lib/supabase/client';
@@ -49,11 +50,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-parchment">
-        <header className="flex items-center justify-between bg-indigo-900 px-4 py-3">
+        <header className="flex items-center justify-between bg-nav-gradient px-4 py-3">
           <WorkspaceSwitcher />
           <SyncIndicator />
         </header>
-        <main>{children}</main>
+        <motion.main
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        >
+          {children}
+        </motion.main>
       </div>
     </QueryClientProvider>
   );

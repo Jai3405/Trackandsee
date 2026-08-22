@@ -39,7 +39,7 @@ export default function GoalsPage() {
         <label htmlFor="new-goal-title" className="sr-only">Title</label>
         <input id="new-goal-title" value={title} onChange={(e) => setTitle(e.target.value)}
           className="flex-1 rounded-lg border px-3 py-2" placeholder="New goal title" />
-        <button type="submit" className="rounded-lg bg-brass px-4 py-2">New goal</button>
+        <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-parchment">New goal</button>
       </form>
     </div>
   );
