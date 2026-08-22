@@ -1,6 +1,7 @@
 'use client';
 import { useTasks, useToggleTask } from '@/lib/hooks/useTasks';
 import { EmptyState } from '@/components/ui/empty-state';
+import { TaskRow } from '@/components/task-row';
 
 export default function TodayPage() {
   const { data: tasks = [] } = useTasks();
@@ -13,10 +14,7 @@ export default function TodayPage() {
       {today.length === 0 && <EmptyState title="Nothing here yet" description="Add a task to get started." />}
       <ul>
         {today.map((t) => (
-          <li key={t.id} className="mb-2 flex items-center gap-2">
-            <input type="checkbox" id={`today-${t.id}`} checked={t.done} onChange={() => toggleTask.mutate(t)} />
-            <label htmlFor={`today-${t.id}`}>{t.title}</label>
-          </li>
+          <TaskRow key={t.id} task={t} onToggle={(task) => toggleTask.mutate(task)} />
         ))}
       </ul>
     </div>
