@@ -3,6 +3,11 @@ on:
   pull_request:
   push:
     branches: [main]
+# E2E (Playwright) is a deliberate manual pre-merge gate for now, not run in this
+# workflow — a full CI job would need webServer wiring, a seeded auth user, and
+# secrets, which is disproportionate for this phase. Build-failure detection is
+# handled by Vercel's own preview-deploy build on every PR (see
+# docs/08-deployment-ops/deployment-plan.md), not by GitHub Actions.
 jobs:
   test:
     runs-on: ubuntu-latest
