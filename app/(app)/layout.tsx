@@ -38,7 +38,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       unsubscribeRealtime();
       window.removeEventListener('online', onOnline);
     };
-  }, [user]);
+    // Keyed on user id, not object identity: Supabase mints a new `user` object on
+    // every TOKEN_REFRESHED event, which would otherwise tear down and resubscribe
+    // the sync loop hourly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   if (loading || !user) return null;
 
