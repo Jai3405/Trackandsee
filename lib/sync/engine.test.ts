@@ -6,7 +6,7 @@ import { pullTable, pushOutbox } from './engine';
 type Row = Record<string, unknown>;
 type FakeSupabase = SupabaseClient & { upserted: Row[]; updated: { payload: Row; id: string }[] };
 
-function fakeSupabase(selectRows: Row[]): FakeSupabase {
+function fakeSupabase(selectRows: Row[], opts: { upsertError?: { message: string } } = {}): FakeSupabase {
   const upserted: Row[] = [];
   const updated: { payload: Row; id: string }[] = [];
   return {
@@ -14,7 +14,10 @@ function fakeSupabase(selectRows: Row[]): FakeSupabase {
     updated,
     from: () => ({
       select: () => ({ gt: () => Promise.resolve({ data: selectRows, error: null }) }),
-      upsert: (payload: Row) => { upserted.push(payload); return Promise.resolve({ error: null }); },
+      upsert: (payload: Row) => {
+        upserted.push(payload);
+        return Promise.resolve({ error: opts.upsertError ?? null });
+      },
       update: (payload: Row) => ({
         eq: (_col: string, id: string) => { updated.push({ payload, id }); return Promise.resolve({ error: null }); },
       }),
@@ -46,6 +49,31 @@ describe('pushOutbox', () => {
     expect(supabase.updated).toHaveLength(1);
     expect(supabase.updated[0].id).toBe('t3');
     expect(supabase.updated[0].payload).toHaveProperty('deleted_at');
+  });
+
+  it('drains in chronological order by clientUpdatedAt, not insertion order', async () => {
+    const db = new AppDB(); await db.open();
+    // Enqueue the newer edit first so primary-key (insertion) order would push it out of turn.
+    await db.outbox.add({ id: 'o-newer', table: 'goals', op: 'upsert', recordId: 'g1', payload: { id: 'g1', title: 'newer' }, clientUpdatedAt: '2026-01-02T00:00:00Z' });
+    await db.outbox.add({ id: 'o-older', table: 'goals', op: 'upsert', recordId: 'g1', payload: { id: 'g1', title: 'older' }, clientUpdatedAt: '2026-01-01T00:00:00Z' });
+    const supabase = fakeSupabase([]);
+
+    await pushOutbox(supabase, db);
+
+    expect(supabase.upserted).toHaveLength(2);
+    expect(supabase.upserted[0].title).toBe('older');
+    expect(supabase.upserted[1].title).toBe('newer');
+  });
+
+  it('keeps a failed entry in the outbox for retry', async () => {
+    const db = new AppDB(); await db.open();
+    await db.outbox.add({ id: 'o-fail', table: 'goals', op: 'upsert', recordId: 'g1', payload: { id: 'g1', title: 'x' }, clientUpdatedAt: '2026-01-01T00:00:00Z' });
+    const supabase = fakeSupabase([], { upsertError: { message: 'simulated failure' } });
+
+    await pushOutbox(supabase, db);
+
+    expect(await db.outbox.count()).toBe(1);
+    expect(await db.outbox.get('o-fail')).toBeDefined();
   });
 });
 

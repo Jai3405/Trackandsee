@@ -4,7 +4,8 @@ import type { SyncTable } from '../db/types';
 import { serverWins } from './lww';
 
 export async function pushOutbox(supabase: SupabaseClient, db: AppDB): Promise<void> {
-  const entries = await db.outbox.toArray();
+  const entries = (await db.outbox.toArray())
+    .sort((a, b) => a.clientUpdatedAt.localeCompare(b.clientUpdatedAt));
   for (const entry of entries) {
     let result: { error: unknown };
     if (entry.op === 'delete') {
