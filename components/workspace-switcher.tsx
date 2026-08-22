@@ -12,10 +12,12 @@ export function WorkspaceSwitcher() {
         className={`rounded px-3 py-1 text-sm ${active === 'personal' ? 'bg-brass text-ink' : 'text-parchment'}`}>
         Personal
       </Link>
-      <Link href="/org/projects"
-        className={`rounded px-3 py-1 text-sm ${active === 'org' ? 'bg-brass text-ink' : 'text-parchment'}`}>
+      <span
+        aria-disabled="true"
+        title="Org workspace is not available yet"
+        className="cursor-not-allowed rounded px-3 py-1 text-sm text-parchment/40">
         Org
-      </Link>
+      </span>
     </nav>
   );
 }
