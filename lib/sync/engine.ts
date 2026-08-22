@@ -6,11 +6,14 @@ import { serverWins } from './lww';
 export async function pushOutbox(supabase: SupabaseClient, db: AppDB): Promise<void> {
   const entries = await db.outbox.toArray();
   for (const entry of entries) {
-    const { error } = entry.op === 'delete'
-      ? await supabase.from(entry.table).update({ deleted_at: new Date().toISOString() }).eq('id', entry.recordId)
-      // ponytail: upsert entries are always enqueued with a payload; null is only valid for deletes.
-      : await supabase.from(entry.table).upsert(entry.payload!);
-    if (!error) await db.outbox.delete(entry.id);
+    let result: { error: unknown };
+    if (entry.op === 'delete') {
+      result = await supabase.from(entry.table).update({ deleted_at: new Date().toISOString() }).eq('id', entry.recordId);
+    } else {
+      if (!entry.payload) throw new Error(`upsert outbox entry missing payload: ${entry.id}`);
+      result = await supabase.from(entry.table).upsert(entry.payload);
+    }
+    if (!result.error) await db.outbox.delete(entry.id);
   }
 }
 
