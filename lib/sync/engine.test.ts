@@ -1,21 +1,25 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { AppDB } from '../db/schema';
 import { pullTable, pushOutbox } from './engine';
 
-function fakeSupabase(selectRows: any[]) {
-  const upserted: any[] = [];
-  const updated: { payload: any; id: any }[] = [];
+type Row = Record<string, unknown>;
+type FakeSupabase = SupabaseClient & { upserted: Row[]; updated: { payload: Row; id: string }[] };
+
+function fakeSupabase(selectRows: Row[]): FakeSupabase {
+  const upserted: Row[] = [];
+  const updated: { payload: Row; id: string }[] = [];
   return {
     upserted,
     updated,
     from: () => ({
       select: () => ({ gt: () => Promise.resolve({ data: selectRows, error: null }) }),
-      upsert: (payload: any) => { upserted.push(payload); return Promise.resolve({ error: null }); },
-      update: (payload: any) => ({
-        eq: (_col: string, id: any) => { updated.push({ payload, id }); return Promise.resolve({ error: null }); },
+      upsert: (payload: Row) => { upserted.push(payload); return Promise.resolve({ error: null }); },
+      update: (payload: Row) => ({
+        eq: (_col: string, id: string) => { updated.push({ payload, id }); return Promise.resolve({ error: null }); },
       }),
     }),
-  } as any;
+  } as unknown as FakeSupabase;
 }
 
 describe('pushOutbox', () => {

@@ -28,7 +28,8 @@ export async function pullTable(supabase: SupabaseClient, db: AppDB, table: Sync
     const pending = await db.outbox.where({ table, recordId: remote.id }).first();
     if (!serverWins(pending?.clientUpdatedAt, remote.updated_at)) continue;
     if (pending) await db.outbox.delete(pending.id);
-    await (db as any)[table].put(remote);
+    if (table === 'goals') await db.goals.put(remote);
+    else await db.tasks.put(remote);
   }
 
   const latest = data.reduce((max, row) => (row.updated_at > max ? row.updated_at : max), watermark);

@@ -12,6 +12,11 @@ function TaskRow({ task, onToggle }: { task: Task; onToggle: (task: Task) => voi
   // stale `task.done` before the optimistic cache update lands a tick later). Reset
   // during render (React's documented pattern for this) whenever the server-backed
   // value catches up, so a realtime update from another device still wins.
+  //
+  // Isolation-tested: with only the `onMutate` optimistic cache update (no local
+  // override), `create a goal, add an action item, complete it` fails 3/3 runs with
+  // "locator.check: Clicking the checkbox did not change its state" — see task-10
+  // fix report. This component is required, not precautionary.
   const [lastSeenDone, setLastSeenDone] = useState(task.done);
   const [override, setOverride] = useState<boolean | null>(null);
   if (task.done !== lastSeenDone) {
