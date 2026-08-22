@@ -1,0 +1,41 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      # supabase/tests/rls.test.ts needs a real local Postgres+RLS stack and a real
+      # ANON_KEY (same as local dev — see Task 3) — without this, that test fails in
+      # CI every time regardless of whether the RLS policies are actually correct.
+      - uses: supabase/setup-cli@v1
+      - run: npx supabase start
+      - run: npx supabase db reset
+      - name: Run tests
+        run: |
+          export SUPABASE_ANON_KEY=$(npx supabase status -o json | jq -r '.ANON_KEY')
+          npm run test -- --run
+      - run: npm audit --audit-level=high
+
+  migrate:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+      - run: supabase link --project-ref $SUPABASE_PROJECT_REF
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      - run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

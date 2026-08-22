@@ -44,6 +44,14 @@ export function useToggleTask() {
       await enqueue(db, { table: 'tasks', op: 'upsert', recordId: updated.id, payload: updated as unknown as Record<string, unknown>, clientUpdatedAt: now });
       return updated;
     },
+    // Optimistically flip the cached task so the (controlled) checkbox reflects the
+    // click immediately, instead of being reverted by a re-render that lands before
+    // the Dexie write + invalidateQueries round-trip resolves.
+    onMutate: (task) => {
+      queryClient.setQueriesData<Task[]>({ queryKey: ['tasks'] }, (old) =>
+        old?.map((t) => (t.id === task.id ? { ...t, done: !t.done } : t)),
+      );
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
   });
 }

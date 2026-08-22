@@ -7,8 +7,9 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

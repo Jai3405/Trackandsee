@@ -23,7 +23,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
     const supabase = getSupabaseClient();
-    const interval = setInterval(() => runSyncCycle(supabase, db), 30_000);
+    // Backstop for reconnect-triggered sync: some browsers/automation contexts
+    // (notably Chromium under devtools-protocol offline emulation) never fire a
+    // window 'online' event even though navigator.onLine flips correctly, so a
+    // short poll is what actually gets a pending outbox flushed on reconnect —
+    // the 'online' listener below still gets real users a near-instant sync too.
+    const interval = setInterval(() => runSyncCycle(supabase, db), 5_000);
     const unsubscribeRealtime = subscribeRealtime(supabase, db, () => queryClient.invalidateQueries());
     const onOnline = () => runSyncCycle(supabase, db);
     window.addEventListener('online', onOnline);
