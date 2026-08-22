@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // next-pwa generated service worker output (gitignored, not hand-written).
+    "public/sw.js",
+    "public/workbox-*.js",
+    // Supabase CLI local runtime state (gitignored, not hand-written).
+    "supabase/.temp/**",
+    "supabase/.branches/**",
   ]),
 ]);
 
