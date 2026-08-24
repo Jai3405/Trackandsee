@@ -7,12 +7,16 @@ export async function GET(request: NextRequest) {
   const cookie = request.cookies.get('gmail_oauth')?.value;
 
   if (!code || !state || !cookie) {
-    return NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    const response = NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    response.cookies.delete('gmail_oauth');
+    return response;
   }
 
   const { state: expectedState, accessToken } = JSON.parse(cookie) as { state: string; accessToken: string };
   if (state !== expectedState) {
-    return NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    const response = NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    response.cookies.delete('gmail_oauth');
+    return response;
   }
 
   const redirectUri = new URL('/api/gmail/callback', request.url).toString();
@@ -29,7 +33,9 @@ export async function GET(request: NextRequest) {
   });
 
   if (!tokenResponse.ok) {
-    return NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    const response = NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    response.cookies.delete('gmail_oauth');
+    return response;
   }
 
   const tokens = (await tokenResponse.json()) as { refresh_token?: string };
@@ -37,7 +43,9 @@ export async function GET(request: NextRequest) {
     // Google only issues a refresh_token on first consent (or when prompt=consent
     // forces re-consent, which /connect always passes) — this branch means
     // something upstream changed; surface it rather than storing nothing silently.
-    return NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    const response = NextResponse.redirect(new URL('/personal/settings?gmail_error=1', request.url));
+    response.cookies.delete('gmail_oauth');
+    return response;
   }
 
   const supabase = userScopedClient(accessToken);
