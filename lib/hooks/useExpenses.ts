@@ -16,10 +16,10 @@ export function useCreateExpense() {
   const queryClient = useQueryClient();
   const { user } = useSession();
   return useMutation({
-    mutationFn: async (input: { date: string; amount: number; kind: 'expense' | 'investment'; description?: string }) => {
+    mutationFn: async (input: { id?: string; date: string; amount: number; kind: 'expense' | 'investment'; description?: string }) => {
       const now = new Date().toISOString();
       const expense: Expense = {
-        id: crypto.randomUUID(), user_id: user!.id, date: input.date, amount: input.amount,
+        id: input.id ?? crypto.randomUUID(), user_id: user!.id, date: input.date, amount: input.amount,
         kind: input.kind, current_value: null, description: input.description ?? null,
         created_at: now, updated_at: now, deleted_at: null,
       };

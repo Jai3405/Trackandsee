@@ -44,7 +44,7 @@ export function useApprovePendingTransaction() {
   const createExpense = useCreateExpense();
   return useMutation({
     mutationFn: async (input: { id: string; amount: number; description: string; date: string }) => {
-      await createExpense.mutateAsync({ date: input.date, amount: input.amount, kind: 'expense', description: input.description });
+      await createExpense.mutateAsync({ id: input.id, date: input.date, amount: input.amount, kind: 'expense', description: input.description });
       const { error } = await getSupabaseClient().from('pending_transactions').update({ status: 'approved' }).eq('id', input.id);
       if (error) throw error;
     },
