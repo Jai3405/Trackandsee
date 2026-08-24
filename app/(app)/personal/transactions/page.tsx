@@ -52,6 +52,8 @@ function PendingRow({
   const [description, setDescription] = useState(
     tx.merchant ? `${tx.merchant}${tx.category_guess ? ` (${tx.category_guess})` : ''}` : '',
   );
+  const parsedAmount = Number(amount);
+  const isValidAmount = amount.trim() !== '' && !Number.isNaN(parsedAmount);
 
   return (
     <FrameCard className="p-4">
@@ -73,8 +75,9 @@ function PendingRow({
       {tx.raw_snippet && <p className="mb-2 text-xs text-ink/60">{tx.raw_snippet}</p>}
       <div className="flex gap-2">
         <button
-          onClick={() => onApprove({ id: tx.id, amount: Number(amount), description, date: tx.occurred_at.slice(0, 10) })}
-          className="rounded-lg bg-accent px-3 py-1 text-sm text-parchment"
+          onClick={() => onApprove({ id: tx.id, amount: parsedAmount, description, date: tx.occurred_at.slice(0, 10) })}
+          disabled={!isValidAmount}
+          className="rounded-lg bg-accent px-3 py-1 text-sm text-parchment disabled:cursor-not-allowed disabled:opacity-50"
         >
           Approve
         </button>
