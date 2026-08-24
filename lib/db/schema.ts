@@ -1,9 +1,10 @@
 import Dexie, { type Table } from 'dexie';
-import type { Goal, Task, OutboxEntry } from './types';
+import type { Goal, Task, Expense, OutboxEntry } from './types';
 
 export class AppDB extends Dexie {
   goals!: Table<Goal, string>;
   tasks!: Table<Task, string>;
+  expenses!: Table<Expense, string>;
   outbox!: Table<OutboxEntry, string>;
   meta!: Table<{ key: string; value: string }, string>;
 
@@ -16,6 +17,13 @@ export class AppDB extends Dexie {
       tasks: 'id, goal_id, due_date, updated_at, deleted_at',
       outbox: 'id, table, recordId',
       meta: 'key',
+    });
+    this.version(2).stores({
+      goals: 'id, updated_at, deleted_at',
+      tasks: 'id, goal_id, due_date, updated_at, deleted_at',
+      outbox: 'id, table, recordId',
+      meta: 'key',
+      expenses: 'id, date, updated_at, deleted_at',
     });
   }
 }
