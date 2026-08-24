@@ -47,10 +47,12 @@ export default function TasksPage() {
       ) : (
         <ul>
           {sorted.map((t) => (
-            <li key={t.id} className="mb-2">
-              <TaskRow task={t} onToggle={(task) => toggleTask.mutate(task)} />
-              {t.goal_id && <p className="ml-6 text-xs text-ink/50">{goalTitle(t.goal_id)}</p>}
-            </li>
+            <TaskRow
+              key={t.id}
+              task={t}
+              onToggle={(task) => toggleTask.mutate(task)}
+              subtext={t.goal_id ? <p className="ml-6 text-xs text-ink/50">{goalTitle(t.goal_id)}</p> : undefined}
+            />
           ))}
         </ul>
       )}

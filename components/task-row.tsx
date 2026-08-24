@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import type { Task } from '@/lib/db/types';
 
-export function TaskRow({ task, onToggle }: { task: Task; onToggle: (task: Task) => void }) {
+export function TaskRow({ task, onToggle, subtext }: { task: Task; onToggle: (task: Task) => void; subtext?: React.ReactNode }) {
   // Local override so the click is reflected the instant it happens, instead of
   // waiting on the mutation's pending-state re-render (which briefly re-applies the
   // stale `task.done` before the optimistic cache update lands a tick later). Reset
@@ -22,10 +22,13 @@ export function TaskRow({ task, onToggle }: { task: Task; onToggle: (task: Task)
   const done = override ?? task.done;
 
   return (
-    <li className="mb-2 flex items-center gap-2">
-      <input type="checkbox" id={`task-${task.id}`} checked={done}
-        onChange={() => { setOverride(!done); onToggle(task); }} />
-      <label htmlFor={`task-${task.id}`}>{task.title}</label>
+    <li className="mb-2">
+      <div className="flex items-center gap-2">
+        <input type="checkbox" id={`task-${task.id}`} checked={done}
+          onChange={() => { setOverride(!done); onToggle(task); }} />
+        <label htmlFor={`task-${task.id}`}>{task.title}</label>
+      </div>
+      {subtext}
     </li>
   );
 }
