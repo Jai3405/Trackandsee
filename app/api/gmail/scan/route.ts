@@ -45,7 +45,10 @@ export async function POST(request: NextRequest) {
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(sender.query)}&maxResults=20`,
       { headers: { Authorization: `Bearer ${googleAccessToken}` } },
     );
-    if (!listResponse.ok) continue;
+    if (!listResponse.ok) {
+      console.error(`gmail scan: list request failed for query "${sender.query}" (status ${listResponse.status})`);
+      continue;
+    }
     const { messages } = (await listResponse.json()) as { messages?: { id: string }[] };
     if (!messages) continue;
 
@@ -61,7 +64,10 @@ export async function POST(request: NextRequest) {
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`,
         { headers: { Authorization: `Bearer ${googleAccessToken}` } },
       );
-      if (!messageResponse.ok) continue;
+      if (!messageResponse.ok) {
+        console.error(`gmail scan: message fetch failed for message ${messageId} (status ${messageResponse.status})`);
+        continue;
+      }
       const message = (await messageResponse.json()) as GmailMessage;
 
       const body = extractPlainText(message);
@@ -82,7 +88,11 @@ export async function POST(request: NextRequest) {
         raw_snippet: message.snippet ?? body.slice(0, 500),
         status: 'pending',
       });
-      if (!insertError) inserted += 1;
+      if (!insertError) {
+        inserted += 1;
+      } else {
+        console.error(`gmail scan: insert failed for message ${messageId} (query "${sender.query}"):`, insertError);
+      }
     }
   }
 
