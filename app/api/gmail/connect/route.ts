@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyUser } from '@/lib/server/verify-user';
 
 export async function GET(request: NextRequest) {
-  const accessToken = request.nextUrl.searchParams.get('access_token');
-  if (!accessToken) return NextResponse.redirect(new URL('/login', request.url));
+  const accessToken = request.headers.get('authorization')?.replace('Bearer ', '');
+  if (!accessToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const userId = await verifyUser(accessToken);
-  if (!userId) return NextResponse.redirect(new URL('/login', request.url));
+  if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const state = crypto.randomUUID();
   const redirectUri = new URL('/api/gmail/callback', request.url).toString();
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set('prompt', 'consent');
   authUrl.searchParams.set('state', state);
 
-  const response = NextResponse.redirect(authUrl);
+  const response = NextResponse.json({ authUrl: authUrl.toString() });
   // Short-lived, httpOnly: carries her already-issued Supabase access token
   // across the Google redirect round-trip so /callback can write to
   // gmail_connections as her, without needing a service_role key anywhere

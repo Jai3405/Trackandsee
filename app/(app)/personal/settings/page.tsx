@@ -26,7 +26,12 @@ export default function SettingsPage() {
       data: { session },
     } = await getSupabaseClient().auth.getSession();
     if (!session) return;
-    window.location.href = `/api/gmail/connect?access_token=${encodeURIComponent(session.access_token)}`;
+    const res = await fetch('/api/gmail/connect', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (!res.ok) return;
+    const { authUrl } = (await res.json()) as { authUrl: string };
+    window.location.href = authUrl;
   }
 
   return (
