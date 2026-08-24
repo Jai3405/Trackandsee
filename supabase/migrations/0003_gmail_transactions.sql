@@ -41,3 +41,8 @@ create policy pending_transactions_owner on pending_transactions for all
 grant select, insert, update, delete on gmail_connections to authenticated;
 -- pending_transactions follows the standard soft-delete-table grant: no delete.
 grant select, insert, update on pending_transactions to authenticated;
+
+-- Supabase's default ACL grants truncate to anon/authenticated on every new
+-- table; 0001_init.sql's blanket revoke only covered tables that existed at
+-- the time it ran, not these — repeat it here, same as 0001 established.
+revoke truncate on gmail_connections, pending_transactions from anon, authenticated;
