@@ -2,7 +2,7 @@
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useTasks, useCreateTask, useToggleTask } from '@/lib/hooks/useTasks';
-import { useGoals } from '@/lib/hooks/useGoals';
+import { useGoals, useSetGoalStatus } from '@/lib/hooks/useGoals';
 import { goalProgress } from '@/lib/goal-progress';
 import { TaskRow } from '@/components/task-row';
 
@@ -12,6 +12,7 @@ export default function GoalDetailPage() {
   const { data: tasks = [] } = useTasks(id);
   const createTask = useCreateTask();
   const toggleTask = useToggleTask();
+  const setGoalStatus = useSetGoalStatus();
   const [title, setTitle] = useState('');
 
   const goal = goals.find((g) => g.id === id);
@@ -19,7 +20,18 @@ export default function GoalDetailPage() {
 
   return (
     <div className="p-4">
-      <h1 className="mb-1 font-display text-2xl">{goal?.title}</h1>
+      <div className="mb-1 flex items-center justify-between">
+        <h1 className="font-display text-2xl">{goal?.title}</h1>
+        {goal && (
+          <button
+            onClick={() => setGoalStatus.mutate({ id: goal.id, status: goal.status === 'open' ? 'closed' : 'open' })}
+            className="rounded-lg border px-3 py-1 text-sm"
+          >
+            {goal.status === 'open' ? 'Close goal' : 'Reopen goal'}
+          </button>
+        )}
+      </div>
+      {setGoalStatus.isError && <p className="mb-2 text-sm text-rust">Couldn&apos;t update goal status — try again.</p>}
       <p className="mb-4 text-sm text-ink/60">{done} of {total}</p>
       <ul>
         {tasks.map((t) => (

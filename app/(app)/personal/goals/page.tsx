@@ -24,23 +24,37 @@ export default function GoalsPage() {
   const { data: goals = [] } = useGoals();
   const createGoal = useCreateGoal();
   const [title, setTitle] = useState('');
+  const [showClosed, setShowClosed] = useState(false);
+
+  const visible = goals.filter((g) => (showClosed ? g.status === 'closed' : g.status === 'open'));
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 font-display text-2xl">Goals</h1>
-      {goals.length === 0 && (
-        <EmptyState title="No goals yet" description="Set your first goal to start tracking progress." />
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="font-display text-2xl">Goals</h1>
+        <div className="flex gap-3 text-sm">
+          <button onClick={() => setShowClosed(false)} className={!showClosed ? 'font-bold text-ink' : 'text-ink/60'}>Open</button>
+          <button onClick={() => setShowClosed(true)} className={showClosed ? 'font-bold text-ink' : 'text-ink/60'}>Closed</button>
+        </div>
+      </div>
+      {visible.length === 0 && (
+        <EmptyState
+          title={showClosed ? 'No closed goals' : 'No goals yet'}
+          description={showClosed ? 'Goals you close will show up here.' : 'Set your first goal to start tracking progress.'}
+        />
       )}
-      {goals.map((g) => <GoalRow key={g.id} id={g.id} title={g.title} />)}
-      <form
-        className="mt-4 flex gap-2"
-        onSubmit={(e) => { e.preventDefault(); if (title.trim()) { createGoal.mutate({ title }); setTitle(''); } }}
-      >
-        <label htmlFor="new-goal-title" className="sr-only">Title</label>
-        <input id="new-goal-title" value={title} onChange={(e) => setTitle(e.target.value)}
-          className="flex-1 rounded-lg border px-3 py-2" placeholder="New goal title" />
-        <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-parchment">New goal</button>
-      </form>
+      {visible.map((g) => <GoalRow key={g.id} id={g.id} title={g.title} />)}
+      {!showClosed && (
+        <form
+          className="mt-4 flex gap-2"
+          onSubmit={(e) => { e.preventDefault(); if (title.trim()) { createGoal.mutate({ title }); setTitle(''); } }}
+        >
+          <label htmlFor="new-goal-title" className="sr-only">Title</label>
+          <input id="new-goal-title" value={title} onChange={(e) => setTitle(e.target.value)}
+            className="flex-1 rounded-lg border px-3 py-2" placeholder="New goal title" />
+          <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-parchment">New goal</button>
+        </form>
+      )}
     </div>
   );
 }

@@ -30,3 +30,19 @@ export function useCreateGoal() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goals'] }),
   });
 }
+
+export function useSetGoalStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; status: 'open' | 'closed' }) => {
+      const existing = await db.goals.get(input.id);
+      if (!existing) throw new Error('goal not found');
+      const now = new Date().toISOString();
+      const updated: Goal = { ...existing, status: input.status, updated_at: now };
+      await db.goals.put(updated);
+      await enqueue(db, { table: 'goals', op: 'upsert', recordId: updated.id, payload: updated as unknown as Record<string, unknown>, clientUpdatedAt: now });
+      return updated;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goals'] }),
+  });
+}

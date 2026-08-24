@@ -1,7 +1,7 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useGoals, useCreateGoal } from './useGoals';
+import { useGoals, useCreateGoal, useSetGoalStatus } from './useGoals';
 import { db } from '../db/schema';
 
 vi.mock('../auth/session', () => ({
@@ -29,6 +29,27 @@ describe('useCreateGoal', () => {
     const outbox = await db.outbox.toArray();
     expect(outbox).toHaveLength(1);
     expect(outbox[0].table).toBe('goals');
+  });
+});
+
+describe('useSetGoalStatus', () => {
+  it('flips a goal from open to closed without touching its other fields', async () => {
+    await db.goals.put({
+      id: 'g3', user_id: 'u1', title: 'close me', target_date: null, status: 'open',
+      created_at: '2026-01-01', updated_at: '2026-01-01', deleted_at: null,
+    });
+
+    const { result } = renderHook(() => useSetGoalStatus(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ id: 'g3', status: 'closed' });
+    });
+
+    const updated = await db.goals.get('g3');
+    expect(updated?.status).toBe('closed');
+    expect(updated?.title).toBe('close me');
+
+    const outbox = await db.outbox.toArray();
+    expect(outbox.some((e) => e.table === 'goals' && e.op === 'upsert')).toBe(true);
   });
 });
 
