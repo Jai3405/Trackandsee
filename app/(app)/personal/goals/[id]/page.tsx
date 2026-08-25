@@ -1,10 +1,12 @@
+// app/(app)/personal/goals/[id]/page.tsx
 'use client';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useTasks, useCreateTask, useToggleTask } from '@/lib/hooks/useTasks';
 import { useGoals, useSetGoalStatus } from '@/lib/hooks/useGoals';
 import { goalProgress } from '@/lib/goal-progress';
-import { TaskRow } from '@/components/task-row';
+import { PinnedCard } from '@/components/ui/pinned-card';
+import { NotepadLine } from '@/components/ui/notepad-line';
 
 export default function GoalDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,24 +22,28 @@ export default function GoalDetailPage() {
 
   return (
     <div className="p-4">
-      <div className="mb-1 flex items-center justify-between">
-        <h1 className="font-display text-2xl">{goal?.title}</h1>
-        {goal && (
-          <button
-            onClick={() => setGoalStatus.mutate({ id: goal.id, status: goal.status === 'open' ? 'closed' : 'open' })}
-            className="rounded-lg border px-3 py-1 text-sm"
-          >
-            {goal.status === 'open' ? 'Close goal' : 'Reopen goal'}
-          </button>
-        )}
-      </div>
-      {setGoalStatus.isError && <p className="mb-2 text-sm text-rust">Couldn&apos;t update goal status — try again.</p>}
-      <p className="mb-4 text-sm text-ink/60">{done} of {total}</p>
-      <ul>
+      {goal && (
+        <PinnedCard id={goal.id} size="lg" className="mb-6">
+          <div className="flex items-center justify-between">
+            <h1 className="font-display text-2xl">{goal.title}</h1>
+            <button
+              onClick={() => setGoalStatus.mutate({ id: goal.id, status: goal.status === 'open' ? 'closed' : 'open' })}
+              className="rounded-lg border border-ink/30 px-3 py-1 text-sm"
+            >
+              {goal.status === 'open' ? 'Close goal' : 'Reopen goal'}
+            </button>
+          </div>
+          {setGoalStatus.isError && <p className="mt-2 text-sm text-rust">Couldn&apos;t update goal status — try again.</p>}
+          <p className="mt-2 text-sm text-ink/60">{done} of {total} done</p>
+        </PinnedCard>
+      )}
+
+      <div className="rounded-lg bg-paper p-4" style={{ backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 27px, rgba(17,41,75,.08) 27px 28px)' }}>
         {tasks.map((t) => (
-          <TaskRow key={t.id} task={t} onToggle={(task) => toggleTask.mutate(task)} />
+          <NotepadLine key={t.id} task={t} onToggle={(task) => toggleTask.mutate(task)} />
         ))}
-      </ul>
+      </div>
+
       <form
         className="mt-4 flex gap-2"
         onSubmit={(e) => { e.preventDefault(); if (title.trim()) { createTask.mutate({ title, goal_id: id }); setTitle(''); } }}
