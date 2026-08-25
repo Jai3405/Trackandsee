@@ -14,10 +14,10 @@ export function WorkspaceSwitcher() {
           <motion.span
             layoutId="workspace-active-pill"
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="absolute inset-0 rounded bg-accent"
+            className="absolute inset-0 rounded bg-parchment"
           />
         )}
-        <span className={`relative ${active === 'personal' ? 'text-ink' : 'text-parchment'}`}>Personal</span>
+        <span className={`relative ${active === 'personal' ? 'font-semibold text-ink' : 'text-parchment'}`}>Personal</span>
       </Link>
       <span
         aria-disabled="true"

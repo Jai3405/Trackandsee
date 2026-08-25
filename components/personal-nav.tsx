@@ -15,25 +15,30 @@ export function PersonalNav() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center justify-between border-b px-4 py-2">
+    <div className="flex items-end justify-between bg-ink px-4 pt-3">
       <nav className="flex gap-1">
         {TABS.map((tab) => {
           const active = pathname.startsWith(tab.href);
           return (
-            <Link key={tab.href} href={tab.href} aria-current={active ? 'page' : undefined} className="relative rounded px-3 py-1 text-sm">
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={active ? 'page' : undefined}
+              className="relative rounded-t-lg px-4 py-2 text-sm"
+            >
               {active && (
                 <motion.span
                   layoutId="personal-nav-active-pill"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  className="absolute inset-0 rounded bg-ink"
+                  className="absolute inset-0 rounded-t-lg bg-parchment"
                 />
               )}
-              <span className={`relative ${active ? 'text-parchment' : 'text-ink'}`}>{tab.label}</span>
+              <span className={`relative ${active ? 'font-semibold text-ink' : 'text-parchment-dim'}`}>{tab.label}</span>
             </Link>
           );
         })}
       </nav>
-      <Link href="/personal/settings" className="text-sm text-ink/60 underline underline-offset-2">Settings</Link>
+      <Link href="/personal/settings" className="mb-2 text-sm text-parchment-dim underline underline-offset-2">Settings</Link>
     </div>
   );
 }
