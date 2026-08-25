@@ -54,7 +54,7 @@ export default function ExpensesPage() {
             onCancel={() => setEditingId(null)}
             onSave={async (fields) => { await updateExpense.mutateAsync({ id: e.id, ...fields }); setEditingId(null); }}
             onDelete={() => handleDelete(e.id)}
-            saveError={updateExpense.isError}
+            saveError={updateExpense.isError && updateExpense.variables?.id === e.id}
           />
         ))}
         <form
@@ -85,7 +85,7 @@ export default function ExpensesPage() {
             onCancel={() => setEditingId(null)}
             onSave={async (fields) => { await updateExpense.mutateAsync({ id: e.id, ...fields }); setEditingId(null); }}
             onDelete={() => handleDelete(e.id)}
-            saveError={updateExpense.isError}
+            saveError={updateExpense.isError && updateExpense.variables?.id === e.id}
           />
         ))}
       </section>
@@ -108,10 +108,17 @@ function ExpenseRow({
   const [amount, setAmount] = useState(expense.amount.toString());
   const [description, setDescription] = useState(expense.description ?? '');
 
+  function startEdit() {
+    setDate(expense.date);
+    setAmount(expense.amount.toString());
+    setDescription(expense.description ?? '');
+    onEdit();
+  }
+
   if (!editing) {
     return (
       <FrameCard className="mb-2 flex items-center justify-between p-3">
-        <button onClick={onEdit} className="text-left">
+        <button onClick={startEdit} className="text-left">
           <p>{expense.description || '(no description)'}</p>
           <p className="text-sm text-ink/60">{expense.date} — {expense.amount.toFixed(2)}</p>
         </button>
@@ -148,10 +155,15 @@ function InvestmentRow({
   const [currentValue, setCurrentValue] = useState(expense.current_value?.toString() ?? '');
   const delta = expense.current_value != null ? expense.current_value - expense.amount : null;
 
+  function startEdit() {
+    setCurrentValue(expense.current_value?.toString() ?? '');
+    onEdit();
+  }
+
   if (!editing) {
     return (
       <FrameCard className="mb-2 flex items-center justify-between p-3">
-        <button onClick={onEdit} className="text-left">
+        <button onClick={startEdit} className="text-left">
           <p>{expense.description || '(no description)'}</p>
           <p className="text-sm text-ink/60">
             Invested {expense.amount.toFixed(2)}
