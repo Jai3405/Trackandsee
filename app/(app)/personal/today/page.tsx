@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { useTasks, useToggleTask } from '@/lib/hooks/useTasks';
 import { EmptyState } from '@/components/ui/empty-state';
 import { TaskRow } from '@/components/task-row';
@@ -11,10 +10,6 @@ export default function TodayPage() {
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex gap-3 text-sm">
-        <Link href="/personal/settings" className="text-accent underline underline-offset-2">Settings</Link>
-        <Link href="/personal/transactions" className="text-accent underline underline-offset-2">Transactions</Link>
-      </div>
       <h1 className="mb-4 font-display text-2xl">Today</h1>
       {today.length === 0 && <EmptyState title="Nothing here yet" description="Add a task to get started." />}
       <ul>
