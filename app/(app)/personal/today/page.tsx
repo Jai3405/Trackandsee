@@ -1,7 +1,7 @@
 'use client';
 import { useTasks, useToggleTask } from '@/lib/hooks/useTasks';
 import { EmptyState } from '@/components/ui/empty-state';
-import { TaskRow } from '@/components/task-row';
+import { NotepadLine } from '@/components/ui/notepad-line';
 
 export default function TodayPage() {
   const { data: tasks = [] } = useTasks();
@@ -12,11 +12,16 @@ export default function TodayPage() {
     <div className="p-4">
       <h1 className="mb-4 font-display text-2xl">Today</h1>
       {today.length === 0 && <EmptyState title="Nothing here yet" description="Add a task to get started." />}
-      <ul>
-        {today.map((t) => (
-          <TaskRow key={t.id} task={t} onToggle={(task) => toggleTask.mutate(task)} />
-        ))}
-      </ul>
+      {today.length > 0 && (
+        <div
+          className="rounded-lg bg-paper p-4"
+          style={{ backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 27px, rgba(17,41,75,.08) 27px 28px)' }}
+        >
+          {today.map((t) => (
+            <NotepadLine key={t.id} task={t} onToggle={(task) => toggleTask.mutate(task)} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
