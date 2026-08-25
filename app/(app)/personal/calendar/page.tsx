@@ -71,14 +71,19 @@ export default function CalendarPage() {
         </motion.div>
       </AnimatePresence>
 
+      {selectedDay && createTask.isError && <p className="mt-4 text-sm text-rust">Couldn&apos;t add — try again.</p>}
       {selectedDay && (
         <form
           className="mt-4 flex gap-2"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (title.trim()) {
-              createTask.mutate({ title, due_date: selectedDay, kind: 'event' });
-              setTitle('');
+              try {
+                await createTask.mutateAsync({ title, due_date: selectedDay, kind: 'event' });
+                setTitle('');
+              } catch {
+                // createTask.isError renders the message below
+              }
             }
           }}
         >

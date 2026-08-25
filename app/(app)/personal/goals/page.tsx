@@ -33,8 +33,8 @@ export default function GoalsPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="font-display text-2xl">Goals</h1>
         <div className="flex gap-3 text-sm">
-          <button onClick={() => setShowClosed(false)} className={!showClosed ? 'font-bold text-ink' : 'text-ink/60'}>Open</button>
-          <button onClick={() => setShowClosed(true)} className={showClosed ? 'font-bold text-ink' : 'text-ink/60'}>Closed</button>
+          <button onClick={() => setShowClosed(false)} aria-pressed={showClosed === false} className={!showClosed ? 'font-bold text-ink' : 'text-ink/60'}>Open</button>
+          <button onClick={() => setShowClosed(true)} aria-pressed={showClosed === true} className={showClosed ? 'font-bold text-ink' : 'text-ink/60'}>Closed</button>
         </div>
       </div>
       {visible.length === 0 && (

@@ -20,12 +20,12 @@ export function PersonalNav() {
         {TABS.map((tab) => {
           const active = pathname.startsWith(tab.href);
           return (
-            <Link key={tab.href} href={tab.href} className="relative rounded px-3 py-1 text-sm">
+            <Link key={tab.href} href={tab.href} aria-current={active ? 'page' : undefined} className="relative rounded px-3 py-1 text-sm">
               {active && (
                 <motion.span
                   layoutId="personal-nav-active-pill"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  className="absolute inset-0 rounded bg-accent"
+                  className="absolute inset-0 rounded bg-ink"
                 />
               )}
               <span className={`relative ${active ? 'text-parchment' : 'text-ink'}`}>{tab.label}</span>

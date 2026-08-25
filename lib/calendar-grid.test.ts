@@ -24,4 +24,11 @@ describe('monthGrid', () => {
       expect((curr.getTime() - prev.getTime()) / 86_400_000).toBe(1);
     }
   });
+
+  it('always starts the grid on Sunday', () => {
+    for (const [year, month] of [[2026, 0], [2026, 1], [2026, 7], [2027, 11], [2024, 1], [2026, 11]]) {
+      const grid = monthGrid(year, month);
+      expect(new Date(grid[0].date + 'T00:00:00Z').getUTCDay()).toBe(0);
+    }
+  });
 });

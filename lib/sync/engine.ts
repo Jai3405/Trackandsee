@@ -14,7 +14,11 @@ export async function pushOutbox(supabase: SupabaseClient, db: AppDB): Promise<v
       if (!entry.payload) throw new Error(`upsert outbox entry missing payload: ${entry.id}`);
       result = await supabase.from(entry.table).upsert(entry.payload);
     }
-    if (!result.error) await db.outbox.delete(entry.id);
+    if (!result.error) {
+      await db.outbox.delete(entry.id);
+    } else {
+      break;
+    }
   }
 }
 

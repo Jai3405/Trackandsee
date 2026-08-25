@@ -5,6 +5,7 @@ import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } fro
 import { usePendingTransactions } from '@/lib/hooks/usePendingTransactions';
 import { FrameCard } from '@/components/ui/frame-card';
 import { AnimatedNumber } from '@/components/ui/animated-number';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { Expense } from '@/lib/db/types';
 
 export default function ExpensesPage() {
@@ -45,6 +46,9 @@ export default function ExpensesPage() {
           <h2 className="font-display text-lg">Expenses</h2>
           <p className="font-display text-xl"><AnimatedNumber value={total} /></p>
         </div>
+        {plainExpenses.length === 0 && (
+          <EmptyState title="No expenses yet" description="Add your first expense below." />
+        )}
         {plainExpenses.map((e) => (
           <ExpenseRow
             key={e.id}
@@ -57,13 +61,18 @@ export default function ExpensesPage() {
             saveError={updateExpense.isError && updateExpense.variables?.id === e.id}
           />
         ))}
+        {createExpense.isError && <p className="mb-2 text-sm text-rust">Couldn&apos;t add — try again.</p>}
         <form
           className="mt-3 flex flex-wrap gap-2"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (newDate && newAmount) {
-              createExpense.mutate({ date: newDate, amount: Number(newAmount), kind: 'expense', description: newDescription });
-              setNewDate(''); setNewAmount(''); setNewDescription('');
+              try {
+                await createExpense.mutateAsync({ date: newDate, amount: Number(newAmount), kind: 'expense', description: newDescription });
+                setNewDate(''); setNewAmount(''); setNewDescription('');
+              } catch {
+                // createExpense.isError renders the message above
+              }
             }
           }}
         >
@@ -76,6 +85,9 @@ export default function ExpensesPage() {
 
       <section>
         <h2 className="mb-2 font-display text-lg">Investments</h2>
+        {investments.length === 0 && (
+          <EmptyState title="No investments yet" description="Switch an expense to Investment to track it here." />
+        )}
         {investments.map((e) => (
           <InvestmentRow
             key={e.id}
@@ -100,18 +112,20 @@ function ExpenseRow({
   editing: boolean;
   onEdit: () => void;
   onCancel: () => void;
-  onSave: (fields: { date: string; amount: number; description: string }) => void;
+  onSave: (fields: { date: string; amount: number; description: string; kind: 'expense' | 'investment' }) => void;
   onDelete: () => void;
   saveError: boolean;
 }) {
   const [date, setDate] = useState(expense.date);
   const [amount, setAmount] = useState(expense.amount.toString());
   const [description, setDescription] = useState(expense.description ?? '');
+  const [kind, setKind] = useState<'expense' | 'investment'>(expense.kind);
 
   function startEdit() {
     setDate(expense.date);
     setAmount(expense.amount.toString());
     setDescription(expense.description ?? '');
+    setKind(expense.kind);
     onEdit();
   }
 
@@ -134,7 +148,17 @@ function ExpenseRow({
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-lg border px-2 py-1" />
         <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-24 rounded-lg border px-2 py-1" />
         <input value={description} onChange={(e) => setDescription(e.target.value)} className="flex-1 rounded-lg border px-2 py-1" />
-        <button onClick={() => onSave({ date, amount: Number(amount), description })} className="rounded-lg bg-accent px-3 py-1 text-sm text-parchment">Save</button>
+        <label htmlFor={`kind-${expense.id}`} className="sr-only">Kind</label>
+        <select
+          id={`kind-${expense.id}`}
+          value={kind}
+          onChange={(e) => setKind(e.target.value as 'expense' | 'investment')}
+          className="rounded-lg border px-2 py-1"
+        >
+          <option value="expense">Expense</option>
+          <option value="investment">Investment</option>
+        </select>
+        <button onClick={() => onSave({ date, amount: Number(amount), description, kind })} className="rounded-lg bg-accent px-3 py-1 text-sm text-parchment">Save</button>
         <button onClick={onCancel} className="rounded-lg border px-3 py-1 text-sm">Cancel</button>
       </div>
     </FrameCard>

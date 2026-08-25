@@ -9,7 +9,7 @@ export function WorkspaceSwitcher() {
 
   return (
     <nav className="flex gap-1 rounded-lg bg-indigo-700 p-1">
-      <Link href="/personal/today" className="relative rounded px-3 py-1 text-sm">
+      <Link href="/personal/today" aria-current={active === 'personal' ? 'page' : undefined} className="relative rounded px-3 py-1 text-sm">
         {active === 'personal' && (
           <motion.span
             layoutId="workspace-active-pill"
