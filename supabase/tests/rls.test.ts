@@ -33,3 +33,77 @@ describe('goals RLS', () => {
     expect(error).not.toBeNull();
   });
 });
+
+describe('gmail_connections RLS', () => {
+  it('a signed-in user can insert and select their own row', async () => {
+    const user = await newSignedInUser();
+
+    const { error: insertError } = await user.from('gmail_connections').insert({ refresh_token: 'rt-own' });
+    expect(insertError).toBeNull();
+
+    const { data, error } = await user.from('gmail_connections').select('*');
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+  });
+
+  it('a user cannot read another user\'s gmail_connections row', async () => {
+    const userA = await newSignedInUser();
+    const userB = await newSignedInUser();
+
+    const { error: insertError } = await userA.from('gmail_connections').insert({ refresh_token: 'rt-a' });
+    expect(insertError).toBeNull();
+
+    const { data, error } = await userB.from('gmail_connections').select('*');
+    expect(error).toBeNull();
+    expect(data).toEqual([]);
+  });
+
+  it('inserting without auth is rejected', async () => {
+    const anon = createClient(url, anonKey);
+    const { error } = await anon.from('gmail_connections').insert({ refresh_token: 'rt-anon' });
+    expect(error).not.toBeNull();
+  });
+});
+
+describe('pending_transactions RLS', () => {
+  it('a signed-in user can insert and select their own row', async () => {
+    const user = await newSignedInUser();
+
+    const { error: insertError } = await user.from('pending_transactions').insert({
+      source_message_id: `msg-${crypto.randomUUID()}`,
+      occurred_at: new Date().toISOString(),
+      status: 'pending',
+    });
+    expect(insertError).toBeNull();
+
+    const { data, error } = await user.from('pending_transactions').select('*');
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+  });
+
+  it('a user cannot read another user\'s pending_transactions row', async () => {
+    const userA = await newSignedInUser();
+    const userB = await newSignedInUser();
+
+    const { error: insertError } = await userA.from('pending_transactions').insert({
+      source_message_id: `msg-${crypto.randomUUID()}`,
+      occurred_at: new Date().toISOString(),
+      status: 'pending',
+    });
+    expect(insertError).toBeNull();
+
+    const { data, error } = await userB.from('pending_transactions').select('*');
+    expect(error).toBeNull();
+    expect(data).toEqual([]);
+  });
+
+  it('inserting without auth is rejected', async () => {
+    const anon = createClient(url, anonKey);
+    const { error } = await anon.from('pending_transactions').insert({
+      source_message_id: `msg-${crypto.randomUUID()}`,
+      occurred_at: new Date().toISOString(),
+      status: 'pending',
+    });
+    expect(error).not.toBeNull();
+  });
+});

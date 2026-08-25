@@ -111,4 +111,15 @@ describe('pullTable', () => {
 
     expect((await db.tasks.get('t4'))?.title).toBe('from server');
   });
+
+  it('routes an incoming expenses row to the expenses table, not tasks', async () => {
+    const db = new AppDB(); await db.open();
+
+    const supabase = fakeSupabase([{ id: 'e1', user_id: 'u1', date: '2026-01-01', amount: 100, kind: 'expense', current_value: null, description: 'test expense', created_at: '2026-01-01', updated_at: '2026-01-02T00:00:00Z', deleted_at: null }]);
+
+    await pullTable(supabase, db, 'expenses', 'expenses_watermark');
+
+    expect((await db.expenses.get('e1'))?.description).toBe('test expense');
+    expect(await db.tasks.get('e1')).toBeUndefined();
+  });
 });

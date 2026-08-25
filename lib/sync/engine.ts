@@ -30,7 +30,8 @@ export async function pullTable(supabase: SupabaseClient, db: AppDB, table: Sync
     if (!serverWins(pending?.clientUpdatedAt, remote.updated_at)) continue;
     if (pending) await db.outbox.delete(pending.id);
     if (table === 'goals') await db.goals.put(remote);
-    else await db.tasks.put(remote);
+    else if (table === 'tasks') await db.tasks.put(remote);
+    else await db.expenses.put(remote);
   }
 
   const latest = data.reduce((max, row) => (row.updated_at > max ? row.updated_at : max), watermark);
@@ -41,4 +42,5 @@ export async function runSyncCycle(supabase: SupabaseClient, db: AppDB): Promise
   await pushOutbox(supabase, db);
   await pullTable(supabase, db, 'goals', 'goals_watermark');
   await pullTable(supabase, db, 'tasks', 'tasks_watermark');
+  await pullTable(supabase, db, 'expenses', 'expenses_watermark');
 }

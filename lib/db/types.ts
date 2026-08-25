@@ -22,7 +22,20 @@ export interface Task {
   deleted_at: string | null;
 }
 
-export type SyncTable = 'goals' | 'tasks';
+export interface Expense {
+  id: string;
+  user_id: string;
+  date: string;
+  amount: number;
+  kind: 'expense' | 'investment';
+  current_value: number | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export type SyncTable = 'goals' | 'tasks' | 'expenses';
 
 export interface OutboxEntry {
   id: string;
