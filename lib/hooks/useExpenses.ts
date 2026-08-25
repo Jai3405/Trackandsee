@@ -30,3 +30,33 @@ export function useCreateExpense() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
   });
 }
+
+export function useUpdateExpense() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; date?: string; amount?: number; kind?: 'expense' | 'investment'; description?: string; current_value?: number | null }) => {
+      const existing = await db.expenses.get(input.id);
+      if (!existing) throw new Error('expense not found');
+      const now = new Date().toISOString();
+      const updated: Expense = { ...existing, ...input, updated_at: now };
+      await db.expenses.put(updated);
+      await enqueue(db, { table: 'expenses', op: 'upsert', recordId: updated.id, payload: updated as unknown as Record<string, unknown>, clientUpdatedAt: now });
+      return updated;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
+  });
+}
+
+export function useDeleteExpense() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const existing = await db.expenses.get(id);
+      if (!existing) return;
+      const now = new Date().toISOString();
+      await db.expenses.put({ ...existing, deleted_at: now, updated_at: now });
+      await enqueue(db, { table: 'expenses', op: 'delete', recordId: id, payload: null, clientUpdatedAt: now });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
+  });
+}
