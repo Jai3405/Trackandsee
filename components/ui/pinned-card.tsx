@@ -48,11 +48,13 @@ export function PinnedCard({
   children: React.ReactNode;
 }) {
   const rotation = pinRotation(id);
-  const Wrapper = onClick ? motion.button : motion.div;
 
   return (
-    <Wrapper
+    <motion.div
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
       style={{ transform: `rotate(${rotation}deg)` }}
       whileHover={onClick ? { y: -3 } : undefined}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
@@ -76,6 +78,6 @@ export function PinnedCard({
           style={{ background: `repeating-linear-gradient(-45deg, ${VARIANT_HEX[variant]} 0 3px, transparent 3px 6px)` }}
         />
       )}
-    </Wrapper>
+    </motion.div>
   );
 }

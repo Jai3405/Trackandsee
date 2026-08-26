@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from '@/lib/hooks/useExpenses';
 import { usePendingTransactions } from '@/lib/hooks/usePendingTransactions';
-import { FrameCard } from '@/components/ui/frame-card';
+import { PinnedCard } from '@/components/ui/pinned-card';
 import { AnimatedNumber } from '@/components/ui/animated-number';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { Expense } from '@/lib/db/types';
@@ -42,26 +42,28 @@ export default function ExpensesPage() {
       )}
 
       <section className="mb-6">
-        <div className="mb-2 flex items-baseline justify-between">
-          <h2 className="font-display text-lg">Expenses</h2>
-          <p className="font-display text-xl"><AnimatedNumber value={total} /></p>
+        <div className="mb-3 flex items-baseline justify-between rounded-lg bg-ink p-4">
+          <h2 className="font-display text-parchment">This month</h2>
+          <p className="font-display text-2xl text-parchment"><AnimatedNumber value={total} /></p>
         </div>
         {plainExpenses.length === 0 && (
-          <EmptyState title="No expenses yet" description="Add your first expense below." />
+          <EmptyState title="No receipts yet" description="Add your first expense below." />
         )}
-        {plainExpenses.map((e) => (
-          <ExpenseRow
-            key={e.id}
-            expense={e}
-            editing={editingId === e.id}
-            onEdit={() => setEditingId(e.id)}
-            onCancel={() => setEditingId(null)}
-            onSave={async (fields) => { await updateExpense.mutateAsync({ id: e.id, ...fields }); setEditingId(null); }}
-            onDelete={() => handleDelete(e.id)}
-            saveError={updateExpense.isError && updateExpense.variables?.id === e.id}
-          />
-        ))}
-        {createExpense.isError && <p className="mb-2 text-sm text-rust">Couldn&apos;t add — try again.</p>}
+        <div className="flex flex-wrap gap-3">
+          {plainExpenses.map((e) => (
+            <ExpenseRow
+              key={e.id}
+              expense={e}
+              editing={editingId === e.id}
+              onEdit={() => setEditingId(e.id)}
+              onCancel={() => setEditingId(null)}
+              onSave={async (fields) => { await updateExpense.mutateAsync({ id: e.id, ...fields }); setEditingId(null); }}
+              onDelete={() => handleDelete(e.id)}
+              saveError={updateExpense.isError && updateExpense.variables?.id === e.id}
+            />
+          ))}
+        </div>
+        {createExpense.isError && <p className="mb-2 mt-3 text-sm text-rust">Couldn&apos;t add — try again.</p>}
         <form
           className="mt-3 flex flex-wrap gap-2"
           onSubmit={async (e) => {
@@ -86,20 +88,22 @@ export default function ExpensesPage() {
       <section>
         <h2 className="mb-2 font-display text-lg">Investments</h2>
         {investments.length === 0 && (
-          <EmptyState title="No investments yet" description="Switch an expense to Investment to track it here." />
+          <EmptyState title="No swatches pinned yet" description="Switch an expense to Investment to track it here." />
         )}
-        {investments.map((e) => (
-          <InvestmentRow
-            key={e.id}
-            expense={e}
-            editing={editingId === e.id}
-            onEdit={() => setEditingId(e.id)}
-            onCancel={() => setEditingId(null)}
-            onSave={async (fields) => { await updateExpense.mutateAsync({ id: e.id, ...fields }); setEditingId(null); }}
-            onDelete={() => handleDelete(e.id)}
-            saveError={updateExpense.isError && updateExpense.variables?.id === e.id}
-          />
-        ))}
+        <div className="flex flex-wrap gap-3">
+          {investments.map((e) => (
+            <InvestmentRow
+              key={e.id}
+              expense={e}
+              editing={editingId === e.id}
+              onEdit={() => setEditingId(e.id)}
+              onCancel={() => setEditingId(null)}
+              onSave={async (fields) => { await updateExpense.mutateAsync({ id: e.id, ...fields }); setEditingId(null); }}
+              onDelete={() => handleDelete(e.id)}
+              saveError={updateExpense.isError && updateExpense.variables?.id === e.id}
+            />
+          ))}
+        </div>
       </section>
     </div>
   );
@@ -131,18 +135,16 @@ function ExpenseRow({
 
   if (!editing) {
     return (
-      <FrameCard className="mb-2 flex items-center justify-between p-3">
-        <button onClick={startEdit} className="text-left">
-          <p>{expense.description || '(no description)'}</p>
-          <p className="text-sm text-ink/60">{expense.date} — {expense.amount.toFixed(2)}</p>
-        </button>
-        <button onClick={onDelete} className="text-sm text-rust">Delete</button>
-      </FrameCard>
+      <PinnedCard id={expense.id} torn onClick={startEdit} className="w-52">
+        <p>{expense.description || '(no description)'}</p>
+        <p className="text-sm text-ink/60">{expense.date} — <span className="font-semibold text-rust">{expense.amount.toFixed(2)}</span></p>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="mt-1 text-xs text-rust underline">Delete</button>
+      </PinnedCard>
     );
   }
 
   return (
-    <FrameCard className="mb-2 p-3">
+    <div className="w-full rounded-lg border border-ink/20 bg-parchment p-3">
       {saveError && <p className="mb-2 text-sm text-rust">Couldn&apos;t save — try again.</p>}
       <div className="flex flex-wrap gap-2">
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-lg border px-2 py-1" />
@@ -161,7 +163,7 @@ function ExpenseRow({
         <button onClick={() => onSave({ date, amount: Number(amount), description, kind })} className="rounded-lg bg-accent px-3 py-1 text-sm text-parchment">Save</button>
         <button onClick={onCancel} className="rounded-lg border px-3 py-1 text-sm">Cancel</button>
       </div>
-    </FrameCard>
+    </div>
   );
 }
 
@@ -186,24 +188,22 @@ function InvestmentRow({
 
   if (!editing) {
     return (
-      <FrameCard className="mb-2 flex items-center justify-between p-3">
-        <button onClick={startEdit} className="text-left">
-          <p>{expense.description || '(no description)'}</p>
-          <p className="text-sm text-ink/60">
-            Invested {expense.amount.toFixed(2)}
-            {expense.current_value != null && ` — now ${expense.current_value.toFixed(2)}`}
-            {delta != null && (
-              <span className={delta >= 0 ? 'text-sage' : 'text-rust'}> ({delta >= 0 ? '+' : ''}{delta.toFixed(2)})</span>
-            )}
-          </p>
-        </button>
-        <button onClick={onDelete} className="text-sm text-rust">Delete</button>
-      </FrameCard>
+      <PinnedCard id={expense.id} variant="swatch" kindLabel="Investment" onClick={startEdit} className="w-56">
+        <p>{expense.description || '(no description)'}</p>
+        <p className="text-sm text-ink/70">
+          Invested {expense.amount.toFixed(2)}
+          {expense.current_value != null && ` — now ${expense.current_value.toFixed(2)}`}
+          {delta != null && (
+            <span className={delta >= 0 ? 'text-sage' : 'text-rust'}> ({delta >= 0 ? '+' : ''}{delta.toFixed(2)})</span>
+          )}
+        </p>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="mt-1 text-xs text-rust underline">Delete</button>
+      </PinnedCard>
     );
   }
 
   return (
-    <FrameCard className="mb-2 p-3">
+    <div className="w-full rounded-lg border border-ink/20 bg-dusty-blue p-3">
       {saveError && <p className="mb-2 text-sm text-rust">Couldn&apos;t save — try again.</p>}
       <div className="flex gap-2">
         <label htmlFor={`current-value-${expense.id}`} className="text-sm text-ink/60">Current value</label>
@@ -218,6 +218,6 @@ function InvestmentRow({
         <button onClick={() => onSave({ current_value: currentValue === '' ? null : Number(currentValue) })} className="rounded-lg bg-accent px-3 py-1 text-sm text-parchment">Save</button>
         <button onClick={onCancel} className="rounded-lg border px-3 py-1 text-sm">Cancel</button>
       </div>
-    </FrameCard>
+    </div>
   );
 }
