@@ -82,7 +82,7 @@ export default function TasksPage() {
         <div className="rounded-lg bg-notepad p-4">
           {sections.map(([label, items]) => items.length > 0 && (
             <div key={label} className="mb-1 mt-3 first:mt-0">
-              <p className={`mb-1 text-[0.65rem] font-semibold uppercase tracking-wide ${label === 'Overdue' ? 'text-rust' : 'text-ink/55'}`}>{label}</p>
+              <p className={`mb-1 text-[0.65rem] font-semibold uppercase tracking-wide ${label === 'Overdue' ? 'text-ink' : 'text-ink/55'}`}>{label}</p>
               {items.map((t) => (
                 <NotepadLine
                   key={t.id}
