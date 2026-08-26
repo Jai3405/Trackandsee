@@ -135,10 +135,12 @@ function ExpenseRow({
 
   if (!editing) {
     return (
-      <PinnedCard id={expense.id} torn onClick={startEdit} className="w-52">
-        <p>{expense.description || '(no description)'}</p>
-        <p className="text-sm text-ink/60">{expense.date} — <span className="font-semibold text-rust">{expense.amount.toFixed(2)}</span></p>
-        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="mt-1 text-xs text-rust underline">Delete</button>
+      <PinnedCard id={expense.id} torn className="w-52">
+        <button onClick={startEdit} className="block w-full text-left">
+          <p>{expense.description || '(no description)'}</p>
+          <p className="text-sm text-ink/80">{expense.date} — <span className="font-semibold text-ink">{expense.amount.toFixed(2)}</span></p>
+        </button>
+        <button onClick={onDelete} className="mt-1 text-xs text-rust underline">Delete</button>
       </PinnedCard>
     );
   }
@@ -188,16 +190,18 @@ function InvestmentRow({
 
   if (!editing) {
     return (
-      <PinnedCard id={expense.id} variant="swatch" kindLabel="Investment" onClick={startEdit} className="w-56">
-        <p>{expense.description || '(no description)'}</p>
-        <p className="text-sm text-ink/70">
-          Invested {expense.amount.toFixed(2)}
-          {expense.current_value != null && ` — now ${expense.current_value.toFixed(2)}`}
-          {delta != null && (
-            <span className={delta >= 0 ? 'text-sage' : 'text-rust'}> ({delta >= 0 ? '+' : ''}{delta.toFixed(2)})</span>
-          )}
-        </p>
-        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="mt-1 text-xs text-rust underline">Delete</button>
+      <PinnedCard id={expense.id} variant="swatch" kindLabel="Investment" className="w-56">
+        <button onClick={startEdit} className="block w-full text-left">
+          <p>{expense.description || '(no description)'}</p>
+          <p className="text-sm text-ink/80">
+            Invested {expense.amount.toFixed(2)}
+            {expense.current_value != null && ` — now ${expense.current_value.toFixed(2)}`}
+            {delta != null && (
+              <span className="text-ink"> ({delta >= 0 ? '+' : ''}{delta.toFixed(2)})</span>
+            )}
+          </p>
+        </button>
+        <button onClick={onDelete} className="mt-1 text-xs text-rust underline">Delete</button>
       </PinnedCard>
     );
   }
@@ -206,7 +210,7 @@ function InvestmentRow({
     <div className="w-full rounded-lg border border-ink/20 bg-dusty-blue p-3">
       {saveError && <p className="mb-2 text-sm text-rust">Couldn&apos;t save — try again.</p>}
       <div className="flex gap-2">
-        <label htmlFor={`current-value-${expense.id}`} className="text-sm text-ink/60">Current value</label>
+        <label htmlFor={`current-value-${expense.id}`} className="text-sm text-ink/80">Current value</label>
         <input
           id={`current-value-${expense.id}`}
           type="number"

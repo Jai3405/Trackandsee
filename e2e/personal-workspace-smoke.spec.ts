@@ -14,7 +14,7 @@ test('calendar: add an event from a day cell', async ({ page }) => {
 
   const today = new Date();
   const dayLabel = String(today.getUTCDate());
-  await page.getByRole('button', { name: dayLabel, exact: true }).first().click();
+  await page.getByRole('link', { name: dayLabel, exact: true }).first().click();
 
   await page.getByLabel('Title').fill('E2E verify: studio walkthrough');
   await page.getByRole('button', { name: 'Add' }).click();
@@ -43,7 +43,10 @@ test('expenses: add, edit to investment, then delete', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Investments', level: 2 })).toBeVisible();
   await expect(page.getByText('E2E verify: test expense')).toBeVisible();
 
+  // Scope to this specific investment's card (the innermost matching div) so the
+  // click lands on its own Delete button, not some other row's.
+  const card = page.locator('div', { hasText: 'E2E verify: test expense' }).last();
   page.once('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: 'Delete' }).first().click();
+  await card.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText('E2E verify: test expense')).not.toBeVisible();
 });

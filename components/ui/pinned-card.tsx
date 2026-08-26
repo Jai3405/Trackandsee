@@ -34,7 +34,6 @@ export function PinnedCard({
   kindLabel,
   torn = false,
   size = 'md',
-  onClick,
   className = '',
   children,
 }: {
@@ -43,7 +42,6 @@ export function PinnedCard({
   kindLabel?: string;
   torn?: boolean;
   size?: 'sm' | 'md' | 'lg';
-  onClick?: () => void;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -51,15 +49,7 @@ export function PinnedCard({
 
   return (
     <motion.div
-      onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (e) => {
-        if (e.target !== e.currentTarget) return;
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); }
-      } : undefined}
-      style={{ transform: `rotate(${rotation}deg)` }}
-      whileHover={onClick ? { y: -3 } : undefined}
+      style={{ rotate: rotation, boxShadow: SIZE_SHADOW[size] }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
       className={`relative rounded-md text-left ${VARIANT_BG[variant]} ${SIZE_PAD[size]} ${torn ? 'pb-3' : ''} ${className}`}
     >
@@ -68,12 +58,10 @@ export function PinnedCard({
         className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-rust"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,.4)' }}
       />
-      <div style={{ boxShadow: SIZE_SHADOW[size] }} className="rounded-md">
-        {kindLabel && (
-          <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-wide text-ink/55">{kindLabel}</p>
-        )}
-        {children}
-      </div>
+      {kindLabel && (
+        <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-wide text-ink/80">{kindLabel}</p>
+      )}
+      {children}
       {torn && (
         <span
           aria-hidden="true"
