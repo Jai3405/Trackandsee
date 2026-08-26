@@ -23,7 +23,7 @@ export default function CalendarDayPage() {
   const dateObj = new Date(`${date}T00:00:00Z`);
   const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
   const monthDay = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' });
-  const monthHref = `/personal/calendar`;
+  const monthHref = `/personal/calendar?m=${date.slice(0, 7)}`;
   const monthLabel = dateObj.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' });
 
   return (
@@ -51,10 +51,9 @@ export default function CalendarDayPage() {
           ))}
 
           {dueTasks.map((t) => (
-            <div key={t.id} className="rounded-lg bg-parchment p-5">
-              <p className="mb-2 text-[0.6rem] font-semibold uppercase tracking-wide text-ink/55">Task</p>
+            <PinnedCard key={t.id} id={t.id} size="lg" kindLabel="Task">
               <NotepadLine task={t} onToggle={(task) => toggleTask.mutate(task)} goalLabel={t.goal_id ? goalTitle(t.goal_id) : undefined} />
-            </div>
+            </PinnedCard>
           ))}
 
           <form

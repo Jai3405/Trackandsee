@@ -8,11 +8,26 @@ import { PinnedCard } from '@/components/ui/pinned-card';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// Seed year/month from a ?m=YYYY-MM URL param (set by the day-detail page's
+// "Back to [Month]" link) so browsing to a different month and opening a day
+// doesn't dead-end back on the current month. Read via a lazy useState
+// initializer rather than useSearchParams(), which would require wrapping
+// this page in a <Suspense> boundary — same pattern already used in
+// app/(app)/personal/settings/page.tsx.
+function monthFromUrl(): { year: number; month: number } | null {
+  if (typeof window === 'undefined') return null;
+  const m = new URLSearchParams(window.location.search).get('m');
+  if (!m || !/^\d{4}-\d{2}$/.test(m)) return null;
+  const [y, mo] = m.split('-').map(Number);
+  if (mo < 1 || mo > 12) return null;
+  return { year: y, month: mo - 1 };
+}
+
 export default function CalendarPage() {
   const { data: tasks = [] } = useTasks();
   const now = new Date();
-  const [year, setYear] = useState(now.getUTCFullYear());
-  const [month, setMonth] = useState(now.getUTCMonth());
+  const [year, setYear] = useState(() => monthFromUrl()?.year ?? now.getUTCFullYear());
+  const [month, setMonth] = useState(() => monthFromUrl()?.month ?? now.getUTCMonth());
 
   const grid = monthGrid(year, month);
   const monthKey = `${year}-${month}`;
