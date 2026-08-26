@@ -1,23 +1,23 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTasks, useCreateTask } from '@/lib/hooks/useTasks';
+import { useTasks } from '@/lib/hooks/useTasks';
 import { monthGrid } from '@/lib/calendar-grid';
+import { PinnedCard } from '@/components/ui/pinned-card';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function CalendarPage() {
   const { data: tasks = [] } = useTasks();
-  const createTask = useCreateTask();
   const now = new Date();
   const [year, setYear] = useState(now.getUTCFullYear());
   const [month, setMonth] = useState(now.getUTCMonth());
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
 
   const grid = monthGrid(year, month);
   const monthKey = `${year}-${month}`;
   const monthLabel = new Date(Date.UTC(year, month, 1)).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const todayStr = now.toISOString().slice(0, 10);
 
   function goToMonth(delta: number) {
     const d = new Date(Date.UTC(year, month + delta, 1));
@@ -43,61 +43,59 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-ink/60">
-        {WEEKDAY_LABELS.map((w) => <div key={w}>{w}</div>)}
+      <div className="rounded-lg bg-ink p-4">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-parchment-dim">
+          {WEEKDAY_LABELS.map((w) => <div key={w}>{w}</div>)}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={monthKey}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2 }}
+            className="mt-1 grid grid-cols-7 gap-1"
+          >
+            {grid.map((day) => {
+              const items = tasksByDay(day.date);
+              const isToday = day.date === todayStr;
+              return (
+                <Link
+                  key={day.date}
+                  href={`/personal/calendar/${day.date}`}
+                  className={`relative flex min-h-20 flex-col items-center rounded p-1 ${day.inCurrentMonth ? '' : 'opacity-35'} ${isToday ? 'ring-2 ring-rust' : ''}`}
+                >
+                  <span className="self-start text-[0.65rem] text-parchment-dim">{Number(day.date.slice(8, 10))}</span>
+                  {items.length === 1 && (
+                    <PinnedCard id={items[0].id} size="sm" className="mt-2 w-14 text-center text-[0.5rem]">
+                      <span className="line-clamp-2">{items[0].title}</span>
+                    </PinnedCard>
+                  )}
+                  {items.length > 1 && (
+                    <div className="relative mt-2 h-9 w-14">
+                      {items.slice(0, 3).map((t, i) => (
+                        <div
+                          key={t.id}
+                          className="absolute left-0 top-0"
+                          style={{ transform: `translate(${i * 4}px, ${i * 6}px)`, zIndex: 3 - i, opacity: 1 - i * 0.12 }}
+                        >
+                          <PinnedCard id={t.id} size="sm" className="w-14 text-center text-[0.5rem]">
+                            <span className="line-clamp-1">{t.title}</span>
+                          </PinnedCard>
+                        </div>
+                      ))}
+                      <span className="absolute -bottom-1 -right-1 z-10 rounded-full bg-ink px-1 text-[0.5rem] text-parchment" style={{ border: '1px solid #BFB2A1' }}>
+                        {items.length}
+                      </span>
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
       </div>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={monthKey}
-          initial={{ opacity: 0, x: 12 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -12 }}
-          transition={{ duration: 0.2 }}
-          className="grid grid-cols-7 gap-1"
-        >
-          {grid.map((day) => (
-            <button
-              key={day.date}
-              onClick={() => setSelectedDay(day.date)}
-              className={`min-h-16 rounded border p-1 text-left text-xs ${day.inCurrentMonth ? 'bg-parchment' : 'bg-parchment-dim text-ink/40'} ${selectedDay === day.date ? 'ring-2 ring-accent' : ''}`}
-            >
-              <div>{Number(day.date.slice(8, 10))}</div>
-              {tasksByDay(day.date).map((t) => (
-                <div key={t.id} className="truncate">{t.title}</div>
-              ))}
-            </button>
-          ))}
-        </motion.div>
-      </AnimatePresence>
-
-      {selectedDay && createTask.isError && <p className="mt-4 text-sm text-rust">Couldn&apos;t add — try again.</p>}
-      {selectedDay && (
-        <form
-          className="mt-4 flex gap-2"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (title.trim()) {
-              try {
-                await createTask.mutateAsync({ title, due_date: selectedDay, kind: 'event' });
-                setTitle('');
-              } catch {
-                // createTask.isError renders the message below
-              }
-            }
-          }}
-        >
-          <label htmlFor="new-event-title" className="sr-only">Title</label>
-          <input
-            id="new-event-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="flex-1 rounded-lg border px-3 py-2"
-            placeholder={`Add to ${selectedDay}`}
-          />
-          <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-parchment">Add</button>
-        </form>
-      )}
     </div>
   );
 }
