@@ -54,7 +54,10 @@ export function PinnedCard({
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+      onKeyDown={onClick ? (e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); }
+      } : undefined}
       style={{ transform: `rotate(${rotation}deg)` }}
       whileHover={onClick ? { y: -3 } : undefined}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
