@@ -9,10 +9,8 @@ import type { Task } from '@/lib/db/types';
 // Sunday-start week, matching lib/calendar-grid.ts's monthGrid() convention, so
 // Tasks and Calendar never disagree about what "this week" means.
 function endOfWeek(from: Date): Date {
-  const d = new Date(from);
-  d.setDate(d.getDate() + (6 - d.getDay()));
-  d.setHours(23, 59, 59, 999);
-  return d;
+  const day = from.getUTCDay();
+  return new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate() + (6 - day), 23, 59, 59, 999));
 }
 
 function bucketTasks(tasks: Task[]): { today: Task[]; thisWeek: Task[]; later: Task[]; noDate: Task[] } {
