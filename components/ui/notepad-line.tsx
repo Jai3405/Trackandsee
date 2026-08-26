@@ -27,8 +27,19 @@ export function NotepadLine({
   }
   const done = override ?? task.done;
 
+  if (task.kind === 'event') {
+    return (
+      <div className="flex items-center gap-3 py-1 text-sm text-ink">
+        <span aria-hidden="true" className="h-2 w-2 flex-shrink-0 rounded-full bg-rust" />
+        <span className="text-xs font-semibold uppercase tracking-wide text-ink/80">Event</span>
+        <span>{task.title}</span>
+        {goalLabel && <span className="ml-auto text-xs text-[#3a5d8f]">{goalLabel}</span>}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-3 border-b border-ink/10 py-1.5 text-sm text-ink last:border-b-0">
+    <div className="flex items-center gap-3 py-1 text-sm text-ink">
       <input
         type="checkbox"
         id={`notepad-task-${task.id}`}
@@ -37,7 +48,7 @@ export function NotepadLine({
         className="h-3.5 w-3.5 flex-shrink-0 rounded border-ink"
       />
       <label htmlFor={`notepad-task-${task.id}`} className={done ? 'line-through opacity-50' : ''}>{task.title}</label>
-      {goalLabel && <span className="ml-auto text-xs text-accent">{goalLabel}</span>}
+      {goalLabel && <span className="ml-auto text-xs text-[#3a5d8f]">{goalLabel}</span>}
     </div>
   );
 }

@@ -13,20 +13,22 @@ function endOfWeek(from: Date): Date {
   return new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate() + (6 - day), 23, 59, 59, 999));
 }
 
-function bucketTasks(tasks: Task[]): { today: Task[]; thisWeek: Task[]; later: Task[]; noDate: Task[] } {
+function bucketTasks(tasks: Task[]): { overdue: Task[]; today: Task[]; thisWeek: Task[]; later: Task[]; noDate: Task[] } {
   const todayStr = new Date().toISOString().slice(0, 10);
   const weekEndStr = endOfWeek(new Date()).toISOString().slice(0, 10);
+  const overdue: Task[] = [];
   const today: Task[] = [];
   const thisWeek: Task[] = [];
   const later: Task[] = [];
   const noDate: Task[] = [];
   for (const t of tasks) {
     if (!t.due_date) noDate.push(t);
+    else if (t.due_date < todayStr) overdue.push(t);
     else if (t.due_date === todayStr) today.push(t);
     else if (t.due_date > todayStr && t.due_date <= weekEndStr) thisWeek.push(t);
     else later.push(t);
   }
-  return { today, thisWeek, later, noDate };
+  return { overdue, today, thisWeek, later, noDate };
 }
 
 export default function TasksPage() {
@@ -51,6 +53,7 @@ export default function TasksPage() {
   const goalTitle = (goalId: string | null) => goals.find((g) => g.id === goalId)?.title;
   const buckets = bucketTasks(sorted);
   const sections: [string, Task[]][] = [
+    ['Overdue', buckets.overdue],
     ['Today', buckets.today],
     ['This week', buckets.thisWeek],
     ['Later', buckets.later],
@@ -76,13 +79,10 @@ export default function TasksPage() {
       {sorted.length === 0 ? (
         <EmptyState title="No tasks" description="Nothing matches this filter yet." />
       ) : (
-        <div
-          className="rounded-lg bg-paper p-4"
-          style={{ backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 27px, rgba(17,41,75,.08) 27px 28px)' }}
-        >
+        <div className="rounded-lg bg-notepad p-4">
           {sections.map(([label, items]) => items.length > 0 && (
-            <div key={label} className="mb-1">
-              <p className="mb-1 mt-3 text-[0.65rem] font-semibold uppercase tracking-wide text-ink/55 first:mt-0">{label}</p>
+            <div key={label} className="mb-1 mt-3 first:mt-0">
+              <p className={`mb-1 text-[0.65rem] font-semibold uppercase tracking-wide ${label === 'Overdue' ? 'text-rust' : 'text-ink/55'}`}>{label}</p>
               {items.map((t) => (
                 <NotepadLine
                   key={t.id}

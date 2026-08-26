@@ -13,10 +13,7 @@ export default function TodayPage() {
       <h1 className="mb-4 font-display text-2xl">Today</h1>
       {today.length === 0 && <EmptyState title="Nothing here yet" description="Add a task to get started." />}
       {today.length > 0 && (
-        <div
-          className="rounded-lg bg-paper p-4"
-          style={{ backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 27px, rgba(17,41,75,.08) 27px 28px)' }}
-        >
+        <div className="rounded-lg bg-notepad p-4">
           {today.map((t) => (
             <NotepadLine key={t.id} task={t} onToggle={(task) => toggleTask.mutate(task)} />
           ))}

@@ -38,7 +38,7 @@ export default function GoalDetailPage() {
         </PinnedCard>
       )}
 
-      <div className="rounded-lg bg-paper p-4" style={{ backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 27px, rgba(17,41,75,.08) 27px 28px)' }}>
+      <div className="rounded-lg bg-notepad p-4">
         {tasks.map((t) => (
           <NotepadLine key={t.id} task={t} onToggle={(task) => toggleTask.mutate(task)} />
         ))}
